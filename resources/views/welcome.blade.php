@@ -4,8 +4,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/typeit@8.7.1/dist/index.umd.js"></script>
 
-    WELOME TO MY OAGE
-
     {{-- MAIN VIEW --}}
     <section class="hero h-dvh relative flex items-center justify-center text-center text-black drop-shadow-7xl  dark:text-white overflow-hidden">
         <div class="video-container w-full h-full relative">
