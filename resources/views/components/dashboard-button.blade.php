@@ -1,0 +1,1 @@
+<a {{$attributes}} class="block px-4 py-2  {{ request()->url() == url($attributes->get('href')) ? 'dark:bg-gray-700 bg-blue-600 text-white' : '' }}  dark:hover:bg-gray-600 hover:bg-blue-500 hover:text-white rounded-lg">{{$slot}}</a>
