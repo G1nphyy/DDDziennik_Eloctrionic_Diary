@@ -1,8 +1,11 @@
 <?php
 
+use App\Models\Classes;
+use App\Models\Subjects;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Models\User;
 
 return new class extends Migration
 {
@@ -13,7 +16,14 @@ return new class extends Migration
     {
         Schema::create('grades', function (Blueprint $table) {
             $table->id();
+            $table->foreignIdFor(User::class, 'student_id');
+            $table->foreignIdFor(User::class, 'teacher_id');
+            $table->foreignIdFor(Subjects::class, 'subject_id');
+            $table->integer('grade');
+            $table->integer('weight');
+            $table->text('description');
             $table->timestamps();
+
         });
     }
 
