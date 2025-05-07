@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Classes;
+use App\Models\Textbooks;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,6 +15,8 @@ return new class extends Migration
     {
         Schema::create('class_textbooks', function (Blueprint $table) {
             $table->id();
+            $table->foreignIdFor(Classes::class, 'class_id');
+            $table->foreignIdFor(Textbooks::class, 'textbook_id');
             $table->timestamps();
         });
     }

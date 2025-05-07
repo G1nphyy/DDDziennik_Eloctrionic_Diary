@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class, 'student_id');
             $table->foreignIdFor(User::class, 'teacher_id');
             $table->foreignIdFor(Subjects::class, 'subject_id');
-            $table->integer('grade');
+            $table->float('grade');
             $table->integer('weight');
             $table->text('description');
             $table->timestamps();
