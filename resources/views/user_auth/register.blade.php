@@ -1,7 +1,7 @@
 <x-auth img="abstract-signup-form-bg.png" type="signup">
     <div class="flex flex-col items-center space-y-4">
         <img src="{{ Vite::asset('resources/images/default_icon.png')}}" alt="logo" class="w-40 rounded-full">
-        <p class="font-consolas dark:tdark:ext-primary-a0 text-lg">Create your account</p>
+        <p class="font-consolas dark:text-primary-a0 text-lg">Create your account</p>
     </div>
 
     <div class="flex w-full gap-2 mt-4">
