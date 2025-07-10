@@ -10,7 +10,7 @@
 
 <div class="flex h-screen">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white shadow-md dark:bg-gray-800 dark:text-white flex flex-col p-5 space-y-4 rounded-r-lg">
+    <aside class="w-64 bg-white shadow-md dark:bg-gray-800 dark:text-white flex flex-col p-5 space-y-4 rounded-ee-lg">
         <h2 class="text-2xl font-bold">Dashboard</h2>
         <nav class="space-y-2">
             <x-dashboard-button href="/dashboard">Home</x-dashboard-button>
@@ -29,7 +29,12 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col">
         <!-- Navbar -->
-        <header class="bg-white dark:bg-gray-800 shadow-md p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
+        <header class="bg-white dark:bg-gray-800 shadow-md p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700 relative">
+            <div class="absolute bottom-0 left-0 translate-y-98/100 w-6 h-6 bg-white dark:bg-gray-800 overflow-hidden">
+                <div class="absolute bottom-0 left-0 w-6 h-6 rounded-tl-2xl bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700"></div>
+            </div>
+
+
             <h1 class="text-xl font-semibold">Welcome {{ Auth::user()->first_name}} {{Auth::user()->last_name}}!</h1>
 
             <div class="flex space-x-4">

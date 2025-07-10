@@ -8,5 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Grades extends Model
 {
     /** @use HasFactory<\Database\Factories\GradesFactory> */
+
+    protected $guarded = [];
+
     use HasFactory;
 }

@@ -2,9 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Grades;
+use App\Models\Schools;
+use App\Models\User;
+use App\Models\UserRole;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use function Laravel\Prompts\select;
+
 class DashboardController extends Controller
 {
-    function index() : object
+    function index(): object
     {
         $role_name = session('role_name');
 
@@ -22,34 +33,84 @@ class DashboardController extends Controller
         }
         if ($role_name == 'admin_db') {
             return view('dashboards.dashboard_admin_db');
-        }else{
+        } else {
             return redirect('/');
         }
     }
-    function grades() : object
+
+    function grades(): object
     {
         $role_name = session('role_name');
 
         if ($role_name == 'admin') {
+            $schools = schools::where('id', Auth::user()->getAuthIdentifier())->get();
+            $users = User::where('id', Auth::user()->getAuthIdentifier())->get();
             return view('dashboards.grades.admin_school');
         }
         if ($role_name == 'teacher') {
+            $schools = schools::all();
+            $users = User::all();
             return view('dashboards.grades.teacher_school');
         }
         if ($role_name == 'student') {
+            $schools = schools::all();
+            $users = User::all();
             return view('dashboards.grades.student_school');
         }
         if ($role_name == 'parent') {
+            $schools = schools::all();
+            $users = User::all();
             return view('dashboards.grades.parent_school');
         }
         if ($role_name == 'admin_db') {
-            return view('dashboards.grades.admin_db');
-        }else{
+
+            $data = userSearch();
+            $users = $data[0];
+            $schools = $data[1];
+
+            return view('dashboards.grades.admin_db', compact('schools', 'users'));
+        } else {
             return redirect('/');
         }
     }
 
-    function attendance() : object
+    function getGrades(Request $request): JsonResponse
+    {
+        $request->validate(['user_token' => 'required|string']);
+
+        try {
+            $userId = Crypt::decryptString($request->user_token);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Invalid token'], 400);
+        }
+
+        $auth = auth()->user();
+
+        $user = Grades::join('users', 'grades.student_id', '=', 'users.id')
+            ->join('subjects', 'grades.subject_id', '=', 'subjects.id')
+            ->where('student_id', $userId)->get()
+            ->select(
+                'grade',
+                'weight',
+                'description',
+                'teacher_id',
+                'updated_at',
+                'name'
+            );
+
+        $teacher = Grades::join('users', 'grades.teacher_id', '=', 'users.id')
+            ->join('subjects', 'grades.subject_id', '=', 'subjects.id')
+            ->where('student_id', $userId)->get()
+            ->select(
+                'teacher_id',
+                'first_name',
+                'last_name'
+            );
+
+        return response()->json(['grades' => $user, 'teacher' => $teacher]);
+    }
+
+    function attendance(): object
     {
         $role_name = session('role_name');
 
@@ -66,13 +127,18 @@ class DashboardController extends Controller
             return view('dashboards.attendance.parent_school');
         }
         if ($role_name == 'admin_db') {
-            return view('dashboards.attendance.admin_db');
-        }else{
+
+            $data = userSearch();
+            $users = $data[0];
+            $schools = $data[1];
+
+            return view('dashboards.attendance.admin_db', compact('schools', 'users'));
+        } else {
             return redirect('/');
         }
     }
 
-    function schedule() : object
+    function schedule(): object
     {
         $role_name = session('role_name');
 
@@ -90,11 +156,12 @@ class DashboardController extends Controller
         }
         if ($role_name == 'admin_db') {
             return view('dashboards.schedule.admin_db');
-        }else{
+        } else {
             return redirect('/');
         }
     }
-    function testsHomeworks() : object
+
+    function testsHomeworks(): object
     {
         $role_name = session('role_name');
 
@@ -112,11 +179,12 @@ class DashboardController extends Controller
         }
         if ($role_name == 'admin_db') {
             return view('dashboards.testsHomeworks.admin_db');
-        }else{
+        } else {
             return redirect('/');
         }
     }
-    function school() : object
+
+    function school(): object
     {
         $role_name = session('role_name');
 
@@ -134,11 +202,12 @@ class DashboardController extends Controller
         }
         if ($role_name == 'admin_db') {
             return view('dashboards.school.admin_db');
-        }else{
+        } else {
             return redirect('/');
         }
     }
-    function meetings() : object
+
+    function meetings(): object
     {
         $role_name = session('role_name');
 
@@ -156,11 +225,12 @@ class DashboardController extends Controller
         }
         if ($role_name == 'admin_db') {
             return view('dashboards.meetings.admin_db');
-        }else{
+        } else {
             return redirect('/');
         }
     }
-    function textbooks() : object
+
+    function textbooks(): object
     {
         $role_name = session('role_name');
 
@@ -178,8 +248,57 @@ class DashboardController extends Controller
         }
         if ($role_name == 'admin_db') {
             return view('dashboards.textbooks.admin_db');
-        }else{
+        } else {
             return redirect('/');
         }
     }
+}
+
+function userSearch() : array
+{
+    $schools = Schools::where('name', "like", "%".request("search")."%")->get();
+    if ($schools->isEmpty()) {
+        $schools = Schools::all();
+    }
+    $search = request('search');
+
+    if ($search && trim($search) !== '') {
+        $users = User::join('user_roles', 'users.id', '=', 'user_roles.user_id')
+            ->leftJoin('user_classes', 'users.id', '=', 'user_classes.user_id')
+            ->leftJoin('classes', 'user_classes.class_id', '=', 'classes.id')
+            ->leftJoin('schools', 'user_roles.school_id', '=', 'schools.id')
+            ->where('user_roles.role_id', 3)
+            ->where(function ($query) use ($search) {
+                $query->where(DB::raw("users.first_name || ' ' || users.last_name"), 'like', "%$search%")
+                    ->orWhere('users.first_name', 'like', "%$search%")
+                    ->orWhere('users.last_name', 'like', "%$search%")
+                    ->orWhere('classes.name', 'like', "%$search%")
+                    ->orWhere('schools.name', 'like', "%$search%");
+            })
+            ->select(
+                'users.id',
+                'users.first_name',
+                'users.last_name',
+                DB::raw('GROUP_CONCAT(DISTINCT classes.name) as class_names'),
+                DB::raw('GROUP_CONCAT(DISTINCT schools.name) as school_names')
+            )
+            ->groupBy('users.id', 'users.first_name', 'users.last_name')
+            ->paginate(10);
+    } else {
+        $users = User::join('user_roles', 'users.id', '=', 'user_roles.user_id')
+            ->leftJoin('user_classes', 'users.id', '=', 'user_classes.user_id')
+            ->leftJoin('classes', 'user_classes.class_id', '=', 'classes.id')
+            ->leftJoin('schools', 'user_roles.school_id', '=', 'schools.id')
+            ->where('user_roles.role_id', 3)
+            ->select(
+                'users.id',
+                'users.first_name',
+                'users.last_name',
+                DB::raw('GROUP_CONCAT(DISTINCT classes.name) as class_names'),
+                DB::raw('GROUP_CONCAT(DISTINCT schools.name) as school_names')
+            )
+            ->groupBy('users.id', 'users.first_name', 'users.last_name')
+            ->paginate(10);
+    }
+    return [$users, $schools];
 }
