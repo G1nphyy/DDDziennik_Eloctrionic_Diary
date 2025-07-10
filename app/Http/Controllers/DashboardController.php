@@ -128,11 +128,15 @@ class DashboardController extends Controller
             return view('dashboards.attendance.parent_school');
         }
         if ($role_name == 'admin_db') {
-            $dateFrom = request('date_from');
-            $dateTo = request('date_to');
+            $dateFrom = request('date_from') ?? null;
+            $dateTo = request('date_to') ?? null;
 
-            session()->put('date_from', $dateFrom);
-            session()->put('date_to', $dateTo);
+            if ($dateFrom && $dateTo) {
+                session()->put('date_from', $dateFrom);
+                session()->put('date_to', $dateTo);
+            }
+
+
             [$users, $schools] = userSearch();
 
             return view('dashboards.attendance.admin_db', compact('schools', 'users'));
@@ -160,15 +164,15 @@ class DashboardController extends Controller
             ->leftJoin('schedules', 'schedules.id', '=', 'attendances.schedule_id')
             ->leftJoin('subjects', 'schedules.subject_id', '=', 'subjects.id')
             ->where('student_id', $userId)
-            ->when($dateFrom, fn($q) => $q->whereDate('attendances.updated_at', '>=', $dateFrom))
-            ->when($dateTo, fn($q) => $q->whereDate('attendances.updated_at', '<=', $dateTo))
+            ->when($dateFrom, fn($q) => $q->whereDate('attendances.date', '>=', $dateFrom))
+            ->when($dateTo, fn($q) => $q->whereDate('attendances.date', '<=', $dateTo))
             ->get();
 
         $teachers = Attendance::join('users', 'attendances.teacher_id', '=', 'users.id')
             ->leftJoin('schedules', 'schedules.id', '=', 'attendances.schedule_id')
             ->where('student_id', $userId)
-            ->when($dateFrom, fn($q) => $q->whereDate('attendances.updated_at', '>=', $dateFrom))
-            ->when($dateTo, fn($q) => $q->whereDate('attendances.updated_at', '<=', $dateTo))
+            ->when($dateFrom, fn($q) => $q->whereDate('attendances.date', '>=', $dateFrom))
+            ->when($dateTo, fn($q) => $q->whereDate('attendances.date', '<=', $dateTo))
             ->get();
 
         return response()->json([

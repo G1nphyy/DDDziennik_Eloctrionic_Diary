@@ -2,7 +2,7 @@
     <form action="" method="get" class="bg-white dark:bg-gray-700 rounded-2xl p-6 shadow-md space-y-4">
         <h2 class="text-xl font-bold text-gray-800 dark:text-white">Date gap</h2>
 
-        <div class="flex gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input
                 type="date"
                 name="date_from"

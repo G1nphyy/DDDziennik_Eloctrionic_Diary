@@ -30,8 +30,10 @@
         <!-- Users List -->
         <x-user-list :users="$users"></x-user-list>
 
-        <!-- Search -->
-        <x-search></x-search>
+        <div class="w-full lg:w-1/3 gap-5 flex flex-col">
+            <!-- Search -->
+            <x-search></x-search>
+        </div>
 
 
     </div>

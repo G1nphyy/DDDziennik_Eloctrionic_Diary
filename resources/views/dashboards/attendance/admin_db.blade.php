@@ -100,7 +100,8 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'},
                     body: JSON.stringify({user_token: userId})})
                     .then(response => response.json())
-                    .then(data => {if (!data || (data.attendances.length === 0 && data.teacher.length === 0)) {popupContent.innerHTML = '<span class="text-xl text-gray-800 dark:text-gray-300 mb-6">No attendance found.</span>';} else {let attendances = data.attendances;
+                    .then(data => {console.log(data); if (!data || (data.attendances.length === 0 && data.teacher.length === 0)) {popupContent.innerHTML = '<span class="text-xl text-gray-800 dark:text-gray-300 mb-6">No attendance found.</span>';} else {let attendances = data.attendances;
+
                         let teacher = data.teacher;
                         console.log(data);
 
