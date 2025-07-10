@@ -1,4 +1,4 @@
-<aside class="w-full lg:w-1/3">
+<aside class="">
     <form action="" method="get" class="bg-white dark:bg-gray-700 rounded-2xl p-6 shadow-md space-y-4">
         <h2 class="text-xl font-bold text-gray-800 dark:text-white">Search Users</h2>
         <input

@@ -69,6 +69,7 @@ Route::get('/dashboard', [DashboardController::class, 'index']);
 Route::get('/dashboard/grades', [DashboardController::class, 'grades']);
 Route::post('/grades/fetch', [DashboardController::class, 'getGrades'])->name('grades.fetch');
 Route::get('/dashboard/attendance', [DashboardController::class, 'attendance']);
+Route::post('/attendance/fetch', [DashboardController::class, 'getAttendance'])->name('attendance.fetch');
 Route::get('/dashboard/schedule', [DashboardController::class, 'schedule']);
 Route::get('/dashboard/testsHomeworks', [DashboardController::class, 'testsHomeworks']);
 Route::get('/dashboard/school', [DashboardController::class, 'school']);

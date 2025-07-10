@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class, 'student_id');
             $table->foreignIdFor(Schedule::class, 'schedule_id');
             $table->foreignIdFor(User::class, 'teacher_id');
+            $table->date('date');
             $table->enum('status', ['present', 'absent', 'late', 'excused','absent_I', 'absent_S'])->default('present');
             $table->text('comment')->nullable();
             $table->timestamps();

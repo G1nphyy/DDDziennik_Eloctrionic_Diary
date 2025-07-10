@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
 use App\Models\Grades;
 use App\Models\Schools;
 use App\Models\User;
@@ -127,15 +128,53 @@ class DashboardController extends Controller
             return view('dashboards.attendance.parent_school');
         }
         if ($role_name == 'admin_db') {
+            $dateFrom = request('date_from');
+            $dateTo = request('date_to');
 
-            $data = userSearch();
-            $users = $data[0];
-            $schools = $data[1];
+            session()->put('date_from', $dateFrom);
+            session()->put('date_to', $dateTo);
+            [$users, $schools] = userSearch();
 
             return view('dashboards.attendance.admin_db', compact('schools', 'users'));
         } else {
             return redirect('/');
         }
+    }
+
+    function getAttendance(Request $request): JsonResponse
+    {
+        $request->validate([
+            'user_token' => 'required|string',
+        ]);
+
+        $dateFrom = session('date_from', null);
+        $dateTo = session('date_to', now()->toDateString());
+
+        try {
+            $userId = Crypt::decryptString($request->user_token);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Invalid token'], 400);
+        }
+
+        $attendances = Attendance::join('users', 'attendances.student_id', '=', 'users.id')
+            ->leftJoin('schedules', 'schedules.id', '=', 'attendances.schedule_id')
+            ->leftJoin('subjects', 'schedules.subject_id', '=', 'subjects.id')
+            ->where('student_id', $userId)
+            ->when($dateFrom, fn($q) => $q->whereDate('attendances.updated_at', '>=', $dateFrom))
+            ->when($dateTo, fn($q) => $q->whereDate('attendances.updated_at', '<=', $dateTo))
+            ->get();
+
+        $teachers = Attendance::join('users', 'attendances.teacher_id', '=', 'users.id')
+            ->leftJoin('schedules', 'schedules.id', '=', 'attendances.schedule_id')
+            ->where('student_id', $userId)
+            ->when($dateFrom, fn($q) => $q->whereDate('attendances.updated_at', '>=', $dateFrom))
+            ->when($dateTo, fn($q) => $q->whereDate('attendances.updated_at', '<=', $dateTo))
+            ->get();
+
+        return response()->json([
+            'attendances' => $attendances,
+            'teacher' => $teachers,
+        ]);
     }
 
     function schedule(): object
@@ -262,6 +301,7 @@ function userSearch() : array
     }
     $search = request('search');
 
+
     if ($search && trim($search) !== '') {
         $users = User::join('user_roles', 'users.id', '=', 'user_roles.user_id')
             ->leftJoin('user_classes', 'users.id', '=', 'user_classes.user_id')
@@ -283,7 +323,7 @@ function userSearch() : array
                 DB::raw('GROUP_CONCAT(DISTINCT schools.name) as school_names')
             )
             ->groupBy('users.id', 'users.first_name', 'users.last_name')
-            ->paginate(10);
+            ->paginate(12);
     } else {
         $users = User::join('user_roles', 'users.id', '=', 'user_roles.user_id')
             ->leftJoin('user_classes', 'users.id', '=', 'user_classes.user_id')
@@ -298,7 +338,7 @@ function userSearch() : array
                 DB::raw('GROUP_CONCAT(DISTINCT schools.name) as school_names')
             )
             ->groupBy('users.id', 'users.first_name', 'users.last_name')
-            ->paginate(10);
+            ->paginate(12);
     }
     return [$users, $schools];
 }
